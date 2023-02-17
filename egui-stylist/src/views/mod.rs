@@ -20,7 +20,7 @@ use text::TextStyleViewState;
 pub type StylistFileDialogFunction =
     Box<dyn Fn(StylistFileDialog, Option<(&str, &[&str])>) -> Option<PathBuf> + Send + Sync>;
 
-pub type StylistOnClickFunction = Box<dyn Fn() + Send + Sync>;
+pub type StylistOnClickFunction = Box<dyn Fn(&mut StylistState) + Send + Sync>;
 
 /// This determines what kind of FileDialog is desired from within the `StylistState`
 #[derive(PartialEq, Serialize, Deserialize, Clone, Copy, Debug)]
@@ -178,12 +178,12 @@ impl StylistState {
             if self.show_save_load_buttons {
                 if let Some(on_save) = &self.on_save_function {
                     if ui.button("Save").clicked() {
-                        on_save();
+                        on_save(&mut self.clone());
                     }
                 }
                 if let Some(on_load) = &self.on_load_function {
                     if ui.button("Load").clicked() {
-                        on_load();
+                        on_load(&mut self.clone());
                     }
                 }
             }
