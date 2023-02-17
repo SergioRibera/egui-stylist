@@ -275,13 +275,14 @@ impl WidgetGallery {
 }
 
 fn example_plot(ui: &mut egui::Ui) -> egui::Response {
-    use egui::plot::{Line, Plot, Value, Values};
+    use egui::plot::{Line, Plot, PlotPoints};
     let n = 128;
-    let line = Line::new(Values::from_values_iter((0..=n).map(|i| {
-        use std::f64::consts::TAU;
-        let x = egui::remap(i as f64, 0.0..=(n as f64), -TAU..=TAU);
-        Value::new(x, x.sin())
-    })));
+    use std::f64::consts::TAU;
+    let line = Line::new(PlotPoints::from_explicit_callback(
+        |x| egui::remap(x, 0.0..=128.0, -TAU..=TAU).sin(),
+        ..,
+        n,
+    ));
     Plot::new("example_plot")
         .height(32.0)
         .data_aspect(1.0)

@@ -8,7 +8,7 @@ pub use app::StylistApp;
 
 // When compiling natively:
 #[cfg(not(target_arch = "wasm32"))]
-fn main() {
+fn main() -> Result<(), eframe::Error> {
     let app_name = "egui-stylist";
     let native_options = eframe::NativeOptions::default();
 
@@ -16,5 +16,5 @@ fn main() {
         app_name,
         native_options,
         Box::new(|cc| Box::new(StylistApp::new(cc))),
-    );
+    )
 }

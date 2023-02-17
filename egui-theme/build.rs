@@ -46,6 +46,5 @@ fn main() {
         .clone()
         .unwrap_or_default();
 
-    // env!("CARGO_PKG_DEP_EGUI_VERSION"); //&egui_pkg.version;
     writeln!(writer, "const EGUI_VERSION: &str = \"{version}\";").expect("failed to write");
 }
