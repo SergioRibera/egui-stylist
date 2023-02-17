@@ -5,6 +5,7 @@ use egui::{
     TextStyle, Ui, Widget,
 };
 
+#[derive(Clone, Debug, PartialEq)]
 pub struct TextStyleViewState {
     new_style_name: String,
     new_style_size: f32,

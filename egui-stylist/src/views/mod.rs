@@ -1,5 +1,5 @@
 //! This contains all the views that are used to construct the core of the application.
-use std::path::PathBuf;
+use std::{path::PathBuf, sync::Arc};
 
 use egui::{CentralPanel, Checkbox, FontDefinitions, ScrollArea, SidePanel, Style, Ui, Widget};
 use egui_theme::EguiTheme;
@@ -18,15 +18,16 @@ use text::TextStyleViewState;
 
 /// StylistFileDialogFunction is a function callback that allows the `StylistState` to open a native filedialog and get file paths for egui.
 pub type StylistFileDialogFunction =
-    Box<dyn Fn(StylistFileDialog, Option<(&str, &[&str])>) -> Option<PathBuf>>;
+    Box<dyn Fn(StylistFileDialog, Option<(&str, &[&str])>) -> Option<PathBuf> + Send + Sync>;
 
 /// This determines what kind of FileDialog is desired from within the `StylistState`
+#[derive(PartialEq, Serialize, Deserialize, Clone, Copy, Debug)]
 pub enum StylistFileDialog {
     Open,
     Save,
 }
 
-#[derive(PartialEq, Serialize, Deserialize, Clone, Copy)]
+#[derive(PartialEq, Serialize, Deserialize, Clone, Copy, Debug)]
 enum StylerTab {
     Colors,
     Fonts,
@@ -43,7 +44,7 @@ enum StylerTab {
 /// egui::CentralPanel::default().show(ctx, |ui| state.ui(ui));
 /// ```
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct StylistState {
     current_tab: StylerTab,
     show_stylist: bool,
@@ -56,7 +57,20 @@ pub struct StylistState {
     text_style_view_state: TextStyleViewState,
     preview: Preview,
     #[serde(skip)]
-    pub file_dialog_function: Option<StylistFileDialogFunction>,
+    pub file_dialog_function: Option<Arc<StylistFileDialogFunction>>,
+}
+
+impl PartialEq for StylistState {
+    fn eq(&self, other: &Self) -> bool {
+        self.current_tab == other.current_tab
+            && self.show_stylist == other.show_stylist
+            && self.show_preview == other.show_preview
+            && self.style == other.style
+            && self.font_definitions == other.font_definitions
+            && self.font_view_state == other.font_view_state
+            && self.text_style_view_state == other.text_style_view_state
+            && self.preview == other.preview
+    }
 }
 
 impl StylistState {
@@ -75,7 +89,7 @@ impl StylistState {
     }
     /// Sets `file_dialog_function` with the function call that it can use to
     pub fn set_file_dialog_function(&mut self, f: StylistFileDialogFunction) {
-        self.file_dialog_function = Some(f);
+        self.file_dialog_function = Some(Arc::new(f));
     }
     /// Calls the file_dialog function and returns a path if it was found.
     pub fn file_dialog(

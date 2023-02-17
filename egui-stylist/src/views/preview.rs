@@ -4,7 +4,7 @@ mod widget_gallery;
 use widget_gallery::WidgetGallery;
 
 /// Allows previewing the current egui framework settings.
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct Preview {
     gallery: WidgetGallery,
     style: Style,

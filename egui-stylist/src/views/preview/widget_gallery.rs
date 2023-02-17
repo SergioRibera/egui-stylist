@@ -1,7 +1,7 @@
 //! This is modified from the widget gallery code available at the [egui repository](https://github.com/emilk/egui/blob/master/egui_demo_lib/src/apps/demo/widget_gallery.rs)
 use egui::{Label, RichText, TextStyle, Widget};
 
-#[derive(Debug, PartialEq, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 enum Enum {
     First,
     Second,
@@ -9,7 +9,7 @@ enum Enum {
 }
 
 /// Shows off one example of each major type of widget.
-#[derive(serde::Deserialize, serde::Serialize)]
+#[derive(serde::Deserialize, serde::Serialize, Clone, Debug, PartialEq)]
 pub struct WidgetGallery {
     enabled: bool,
     visible: bool,

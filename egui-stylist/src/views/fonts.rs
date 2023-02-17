@@ -1,6 +1,7 @@
 use super::StylistFileDialog;
 use std::io::Read;
 use std::path::Path;
+use std::sync::Arc;
 
 use egui::FontData;
 
@@ -16,6 +17,7 @@ use egui::{
     Label, Style, TextEdit, TextStyle, Ui, Widget,
 };
 
+#[derive(Clone, Debug, PartialEq)]
 pub struct FontViewState {
     to_add_name: String,
     to_add_path: String,
@@ -39,7 +41,7 @@ impl Default for FontViewState {
 fn add_font(
     state: &mut FontViewState,
     font_definitions: &mut FontDefinitions,
-    file_dialog_callback: Option<&super::StylistFileDialogFunction>,
+    file_dialog_callback: Option<&Arc<super::StylistFileDialogFunction>>,
     ui: &mut Ui,
 ) {
     // let mut fonts_updated = false;
@@ -159,7 +161,7 @@ fn font_priority(
 /// Displays the current font definition from the core app widget and displays the ui to detect any addition changes.
 pub fn fonts_view(
     state: &mut FontViewState,
-    file_dialog_callback: Option<&super::StylistFileDialogFunction>,
+    file_dialog_callback: Option<&Arc<super::StylistFileDialogFunction>>,
     font_definitions: &mut FontDefinitions,
     style: &mut Style,
     ui: &mut Ui,
