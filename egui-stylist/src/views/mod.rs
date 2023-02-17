@@ -20,8 +20,6 @@ use text::TextStyleViewState;
 pub type StylistFileDialogFunction =
     Box<dyn Fn(StylistFileDialog, Option<(&str, &[&str])>) -> Option<PathBuf> + Send + Sync>;
 
-pub type StylistOnClickFunction = Box<dyn Fn(&mut StylistState) + Send + Sync>;
-
 /// This determines what kind of FileDialog is desired from within the `StylistState`
 #[derive(PartialEq, Serialize, Deserialize, Clone, Copy, Debug)]
 pub enum StylistFileDialog {
@@ -51,7 +49,6 @@ pub struct StylistState {
     current_tab: StylerTab,
     show_stylist: bool,
     show_preview: bool,
-    show_save_load_buttons: bool,
     style: Style,
     font_definitions: FontDefinitions,
     #[serde(skip)]
@@ -61,10 +58,6 @@ pub struct StylistState {
     preview: Preview,
     #[serde(skip)]
     pub file_dialog_function: Option<Arc<StylistFileDialogFunction>>,
-    #[serde(skip)]
-    on_save_function: Option<Arc<StylistOnClickFunction>>,
-    #[serde(skip)]
-    on_load_function: Option<Arc<StylistOnClickFunction>>,
 }
 
 impl PartialEq for StylistState {
@@ -72,7 +65,6 @@ impl PartialEq for StylistState {
         self.current_tab == other.current_tab
             && self.show_stylist == other.show_stylist
             && self.show_preview == other.show_preview
-            && self.show_save_load_buttons == other.show_save_load_buttons
             && self.style == other.style
             && self.font_definitions == other.font_definitions
             && self.font_view_state == other.font_view_state
@@ -88,30 +80,16 @@ impl StylistState {
             style: Style::default(),
             show_stylist: true,
             show_preview: true,
-            show_save_load_buttons: false,
             font_definitions: FontDefinitions::default(),
             font_view_state: FontViewState::default(),
             text_style_view_state: TextStyleViewState::default(),
             preview: Preview::new(Style::default()),
             file_dialog_function: None,
-            on_save_function: None,
-            on_load_function: None,
         }
     }
     /// Sets `file_dialog_function` with the function call that it can use to
     pub fn set_file_dialog_function(&mut self, f: StylistFileDialogFunction) {
         self.file_dialog_function = Some(Arc::new(f));
-    }
-    pub fn show_save_load_buttons(&mut self, v: bool) {
-        self.show_save_load_buttons = v;
-    }
-
-    pub fn set_on_save_function(&mut self, on_save_function: StylistOnClickFunction) {
-        self.on_save_function = Some(Arc::new(on_save_function));
-    }
-
-    pub fn set_on_load_function(&mut self, on_load_function: StylistOnClickFunction) {
-        self.on_load_function = Some(Arc::new(on_load_function));
     }
     /// Calls the file_dialog function and returns a path if it was found.
     pub fn file_dialog(
@@ -174,18 +152,6 @@ impl StylistState {
                 .clicked()
             {
                 self.current_tab = StylerTab::Shape;
-            }
-            if self.show_save_load_buttons {
-                if let Some(on_save) = &self.on_save_function {
-                    if ui.button("Save").clicked() {
-                        on_save(&mut self.clone());
-                    }
-                }
-                if let Some(on_load) = &self.on_load_function {
-                    if ui.button("Load").clicked() {
-                        on_load(&mut self.clone());
-                    }
-                }
             }
             Checkbox::new(&mut self.show_stylist, "Show Stylist").ui(ui);
             Checkbox::new(&mut self.show_preview, "Show preview").ui(ui);
